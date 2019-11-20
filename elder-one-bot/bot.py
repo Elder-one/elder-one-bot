@@ -7,7 +7,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 
-telebot.apihelper.proxy = {"https": "https://95.168.185.183:8080"}
+telebot.apihelper.proxy = {"https": "https://144.217.74.219:3128"}
 bot = telebot.TeleBot(config.access_token)
 
 
