@@ -227,7 +227,7 @@ def get_all_schedule(message):
             times_lst, locations_lst, lessons_lst, rooms_list = \
                 parse_schedule_for_a_day(web_page, day)
         except Exception:
-            resp += '<b>Занятий нет</b>\n'
+            resp += '<b>Занятий нет</b>\n\n\n'
             continue
 
         for time, location, room, lession in zip(times_lst, locations_lst, rooms_list, lessons_lst):
@@ -238,11 +238,15 @@ def get_all_schedule(message):
         resp += '\n'
 
     k = resp.find('<b>Чт</b>')
-    bot.send_message(message.chat.id, resp[:k]+str(k)+' '+str(len(resp)), parse_mode='HTML')
+    bot.send_message(message.chat.id, resp[:k], parse_mode='HTML')
     bot.send_message(message.chat.id, resp[k:], parse_mode='HTML')
 
 
-
+@bot.message_handler(commands=['time'])
+def get_time(message):
+    dt = datetime.now()
+    s = dt.strftime('%d-%m-%Y %H:%M:%S')
+    bot.send_message(message.chat.id, s)
 
 if __name__ == '__main__':
     bot.polling(none_stop=True)
