@@ -237,10 +237,9 @@ def get_all_schedule(message):
                 resp += '<b>{}</b>, {}, {}\n'.format(time, location, lession)
         resp += '\n'
 
-    try: 
-        bot.send_message(message.chat.id, resp, parse_mode='HTML')
-    except Exception:
-        bot.send_message(message.chat.id, 'Расписание слишком длинное')
+        k = resp.find('<b>Чт</b>')
+        bot.send_message(message.chat.id, resp[:k], parse_mode='HTML')
+        bot.send_message(message.chat.id, resp[k:], parse_mode='HTML')
 
 
 
