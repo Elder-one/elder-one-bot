@@ -237,9 +237,9 @@ def get_all_schedule(message):
                 resp += '<b>{}</b>, {}, {}\n'.format(time, location, lession)
         resp += '\n'
 
-        k = resp.find('<b>Чт</b>')
-        bot.send_message(message.chat.id, resp[:k]+str(k)+' '+str(len(resp)), parse_mode='HTML')
-        bot.send_message(message.chat.id, resp[k:], parse_mode='HTML')
+    k = resp.find('<b>Чт</b>')
+    bot.send_message(message.chat.id, resp[:k]+str(k)+' '+str(len(resp)), parse_mode='HTML')
+    bot.send_message(message.chat.id, resp[k:], parse_mode='HTML')
 
 
 
