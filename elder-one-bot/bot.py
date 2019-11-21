@@ -115,6 +115,11 @@ def parse_schedule_for_a_day(web_page, day):
 @bot.message_handler(commands=['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
 def get_schedule(message):
     """ Получить расписание на указанный день """
+    if len(message.text.split()) != 2:
+        resp = f"Используйте <b>/{message.text.split()[0][1:]} <group></b>"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        return
+        
     week_d = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
     day, group = message.text.split()
     day = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].index(day[1:])+1
@@ -141,6 +146,10 @@ def get_schedule(message):
 @bot.message_handler(commands=['near'])
 def get_near_lesson(message):
     """ Получить ближайшее занятие """
+    if len(message.text.split()) != 2:
+        resp = f"Используйте <b>/{message.text.split()[0][1:]} <group></b>"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        return
     # 1. Проверить текущий день
     # 2. Для каждого следующего дня:
     #       если занятий нет --> дальше
@@ -199,6 +208,10 @@ def get_near_lesson(message):
 @bot.message_handler(commands=['tomorrow'])
 def get_tommorow(message):
     """ Получить расписание на следующий день """
+    if len(message.text.split()) != 2:
+        resp = f"Используйте <b>/{message.text.split()[0][1:]} <group></b>"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        return
     week_d = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
     _, group = message.text.split()
     week, day = get_curr_week_day()
@@ -233,6 +246,10 @@ def get_tommorow(message):
 @bot.message_handler(commands=['all'])
 def get_all_schedule(message):
     """ Получить расписание на всю неделю для указанной группы """
+    if len(message.text.split()) != 2:
+        resp = f"Используйте <b>/{message.text.split()[0][1:]} <group></b>"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        return
     _, group = message.text.split()
     week = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
     web_page = get_page(group)
