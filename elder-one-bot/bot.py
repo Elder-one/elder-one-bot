@@ -25,6 +25,8 @@ def get_page(group, week=0):
             group=group)
         response = requests.get(url)
         web_page = response.text
+        if web_page.find("Расписание не найдено") >= 0:
+            return
         page_save(group, week, web_page)
     return web_page
 
@@ -117,6 +119,10 @@ def get_schedule(message):
     day, group = message.text.split()
     day = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].index(day[1:])+1
     web_page = get_page(group)
+    if not web_page:
+        resp = "<b>Указанной группы не существует</b>"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        return
     try:
         times_lst, locations_lst, lessons_lst, rooms_list = \
             parse_schedule_for_a_day(web_page, day)
@@ -145,6 +151,10 @@ def get_near_lesson(message):
     dt = datetime.now()
     curr_h, curr_m = dt.hour, dt.minute
     web_page = get_page(group, week)
+    if not web_page:
+        resp = "<b>Указанной группы не существует</b>"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        return
     try:
         times_lst, locations_lst, lessons_lst, rooms_list = \
             parse_schedule_for_a_day(web_page, day)
@@ -198,6 +208,10 @@ def get_tommorow(message):
     else:
         day += 1
     web_page = get_page(group, week)
+    if not web_page:
+        resp = "<b>Указанной группы не существует</b>"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        return
 
     try:
         times_lst, locations_lst, lessons_lst, rooms_list = \
@@ -222,6 +236,10 @@ def get_all_schedule(message):
     _, group = message.text.split()
     week = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
     web_page = get_page(group)
+    if not web_page:
+        resp = "<b>Указанной группы не существует</b>"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        return
     resp = ''
     for day in range(1, 8):
         resp += f'<b>{week[day-1]}</b>\n'
