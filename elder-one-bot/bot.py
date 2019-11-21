@@ -113,6 +113,7 @@ def parse_schedule_for_a_day(web_page, day):
 @bot.message_handler(commands=['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
 def get_schedule(message):
     """ Получить расписание на указанный день """
+    week_d = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
     day, group = message.text.split()
     day = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].index(day[1:])+1
     web_page = get_page(group)
@@ -122,7 +123,7 @@ def get_schedule(message):
     except Exception:
         bot.send_message(message.chat.id, '<b>В указанный день занятий нет</b>', parse_mode='HTML')
         return
-    resp = ''
+    resp = f'<b>{week_d[day-1]}</b>\n'
     for time, location, room, lession in zip(times_lst, locations_lst, rooms_list, lessons_lst):
         if room != "":
             resp += '<b>{}</b>, {}, {}, {}\n'.format(time, location, room, lession)
@@ -188,6 +189,7 @@ def get_near_lesson(message):
 @bot.message_handler(commands=['tomorrow'])
 def get_tommorow(message):
     """ Получить расписание на следующий день """
+    week_d = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
     _, group = message.text.split()
     week, day = get_curr_week_day()
     if day == 7:
@@ -204,7 +206,7 @@ def get_tommorow(message):
         bot.send_message(message.chat.id, '<b>Завтра занятий нет</b>', parse_mode='HTML')
         return
 
-    resp = ''
+    resp = f'<b>{week_d[day-1]}</b>\n'
     for time, location, room, lession in zip(times_lst, locations_lst, rooms_list, lessons_lst):
         if room != "":
             resp += '<b>{}</b>, {}, {}, {}\n'.format(time, location, room, lession)
