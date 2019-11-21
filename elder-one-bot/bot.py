@@ -103,7 +103,7 @@ def parse_schedule_for_a_day(web_page, day):
     lessons_list = schedule_table.find_all("td", attrs={"class": "lesson"})
     lessons_list = [lesson.text.split("\n") for lesson in lessons_list]
     lessons_list = [''.join(el).split("\t") for el in lessons_list]
-    lessons_list = ['\n'.join(['\t'+el for el in lesson if el]) for lesson in lessons_list]
+    lessons_list = [''.join(['\n    '+el for el in lesson if el]) for lesson in lessons_list]
 
     # Номер аудитории
     rooms_list = schedule_table.find_all("td", attrs={"class": "room"})
