@@ -116,7 +116,7 @@ def parse_schedule_for_a_day(web_page, day):
 def get_schedule(message):
     """ Получить расписание на указанный день """
     if len(message.text.split()) != 2:
-        resp = f"Используйте <b>/{message.text.split()[0][1:]} <group></b>"
+        resp = f"Используйте <b>/{message.text.split()[0][1:]} [group]</b>"
         bot.send_message(message.chat.id, resp, parse_mode='HTML')
         return
         
@@ -147,7 +147,7 @@ def get_schedule(message):
 def get_near_lesson(message):
     """ Получить ближайшее занятие """
     if len(message.text.split()) != 2:
-        resp = f"Используйте <b>/{message.text.split()[0][1:]} <group></b>"
+        resp = f"Используйте <b>/{message.text.split()[0][1:]} [group]</b>"
         bot.send_message(message.chat.id, resp, parse_mode='HTML')
         return
     # 1. Проверить текущий день
@@ -209,7 +209,7 @@ def get_near_lesson(message):
 def get_tommorow(message):
     """ Получить расписание на следующий день """
     if len(message.text.split()) != 2:
-        resp = f"Используйте <b>/{message.text.split()[0][1:]} <group></b>"
+        resp = f"Используйте <b>/{message.text.split()[0][1:]} [group]</b>"
         bot.send_message(message.chat.id, resp, parse_mode='HTML')
         return
     week_d = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
@@ -247,7 +247,7 @@ def get_tommorow(message):
 def get_all_schedule(message):
     """ Получить расписание на всю неделю для указанной группы """
     if len(message.text.split()) != 2:
-        resp = f"Используйте <b>/{message.text.split()[0][1:]} <group></b>"
+        resp = f"Используйте <b>/{message.text.split()[0][1:]} [group]</b>"
         bot.send_message(message.chat.id, resp, parse_mode='HTML')
         return
     _, group = message.text.split()
