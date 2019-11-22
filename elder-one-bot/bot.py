@@ -255,7 +255,10 @@ def get_all_schedule(message):
     elif n == 3:
         _, group, week = message.text.split()
         if week not in {"0", "1", "2"}:
-            resp = "<b>Возможные значения параметра week:\n    0\n    1\n    2</b>"
+            resp = "<b>Возможные значения параметра week:</b>\n"
+            resp += "    <b>0</b> (по умолч.) - всё расписание\n"
+            resp += "    <b>1</b> - чётная неделя\n"
+            resp += "    <b>2</b> - нечётная неделя"
             bot.send_message(message.chat.id, resp, parse_mode='HTML')
             return
         web_page = get_page(group, week)
