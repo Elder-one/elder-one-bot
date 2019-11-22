@@ -307,7 +307,7 @@ def get_help(message):
             resp = "<b>Неизвестная команда</b>\nВведите <b>/help</b> чтобы отобразить список команд"
             bot.send_message(message.chat.id, resp, parse_mode='HTML')
     else:
-        resp = "<b>Неизвестная команда</b>\nВведите <b>/help</b> чтобы отобразить списко команд"
+        resp = "<b>Неизвестная команда</b>\nВведите <b>/help</b> чтобы отобразить список команд"
         bot.send_message(message.chat.id, resp, parse_mode='HTML')
 
         
