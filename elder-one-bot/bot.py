@@ -247,20 +247,29 @@ def get_tommorow(message):
 @bot.message_handler(commands=['all'])
 def get_all_schedule(message):
     """ Получить расписание на всю неделю для указанной группы """
-    if len(message.text.split()) != 2:
-        resp = f"Используйте <b>{message.text.split()[0]} [group]</b>"
+    n = len(message.text.split())
+    week_d = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+    if n == 2:
+        _, group = message.text.split()
+        web_page = get_page(group)
+    elif n == 3:
+        _, group, week = message.text.split()
+        if week not in {"0", "1", "2"}:
+            resp = "<b>Возможные значения параметра week:\n    0\n    1\n    2</b>"
+            bot.send_message(message.chat.id, resp, parse_mode='HTML')
+            return
+        web_page = get_page(group, week)
+    else:
+        resp = f"Используйте <b>{message.text.split()[0]} [group] [week=0]</b>"
         bot.send_message(message.chat.id, resp, parse_mode='HTML')
         return
-    _, group = message.text.split()
-    week = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
-    web_page = get_page(group)
     if not web_page:
         resp = "<b>Указанной группы не существует</b>"
         bot.send_message(message.chat.id, resp, parse_mode='HTML')
         return
     resp = ''
     for day in range(1, 8):
-        resp += f'<b>{week[day-1]}</b>\n'
+        resp += f'<b>{week_d[day-1]}</b>\n'
         try:
             times_lst, locations_lst, lessons_lst, rooms_list = \
                 parse_schedule_for_a_day(web_page, day)
@@ -294,7 +303,7 @@ def get_help(message):
         resp += '    <b>/time</b> - показать текущие дату и время\n'
         resp += '    <b>/tomorrow [group]</b> - показать расписание на завтра для указанной группы\n'
         resp += '    <b>/near [group]</b> - показать ближайшее занятие для указанной группы\n'
-        resp += '    <b>/all [group]</b> - показать ближайшее занятие для указанной группы\n'
+        resp += '    <b>/all [group] [week=0]</b> - показать ближайшее занятие для указанной группы\n'
         resp += '    <b>/[weekday] [group]</b> - показать расписание для указанной группы в указанный день\n'
         resp += '    <b>/help weekday</b> - возможные значения параметра weekday\n'
         bot.send_message(message.chat.id, resp, parse_mode='HTML')
