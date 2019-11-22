@@ -285,6 +285,31 @@ def get_time(message):
     dt = datetime.now()
     s = dt.strftime('%d-%m-%Y %H:%M:%S')
     bot.send_message(message.chat.id, s)
+    
+    
+@bot.message_handler(commands=['help'])
+def get_help(message):
+    if len(message.text.split()) == 1:
+        resp = '<b>Список команд:</b>\n'
+        resp += '    <b>/time</b> - показать текущие дату и время\n'
+        resp += '    <b>/tomorrow [group]</b> - показать расписание на завтра для указанной группы\n'
+        resp += '    <b>/near [group]</b> - показать ближайшее занятие для указанной группы\n'
+        resp += '    <b>/all [group]</b> - показать ближайшее занятие для указанной группы\n'
+        resp += '    <b>/[weekday] [group]</b> - показать расписание для указанной группы в указанный день\n'
+        resp += '    <b>/help weekday</b> - возможные значения параметра weekday\n'
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+    elif len(message.text.split()) == 2:
+        _, cmnd = message.text.split()
+        if cmnd == "weekday":
+            resp = '<b>monday\ntuesday\nwednesday\nthursday\nfriday\nsaturday\nsunday</b>'
+            bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        else:
+            resp = "<b>Неизвестная команда</b>\nВведите <b>/help</b> чтобы отобразить список команд"
+            bot.send_message(message.chat.id, resp, parse_mode='HTML')
+    else:
+        resp = "<b>Неизвестная команда</b>\nВведите <b>/help</b> чтобы отобразить списко команд"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
 
+        
 if __name__ == '__main__':
     bot.polling(none_stop=True)
