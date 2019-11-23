@@ -7,7 +7,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 
-telebot.apihelper.proxy = {"https": "https://89.187.181.123:3128"}
+telebot.apihelper.proxy = {"https": "https://51.158.123.35:8811"}
 bot = telebot.TeleBot(config.access_token)
 
 
@@ -25,6 +25,8 @@ def get_page(group, week=0):
             group=group)
         response = requests.get(url)
         web_page = response.text
+        if web_page.find("Расписание не найдено") >= 0:
+            return
         page_save(group, week, web_page)
     return web_page
 
@@ -99,8 +101,9 @@ def parse_schedule_for_a_day(web_page, day):
 
     # Название дисциплин и имена преподавателей
     lessons_list = schedule_table.find_all("td", attrs={"class": "lesson"})
-    lessons_list = [lesson.text.split('\n\n') for lesson in lessons_list]
-    lessons_list = [', '.join([info for info in lesson_info if info]) for lesson_info in lessons_list]
+    lessons_list = [lesson.text.split("\n") for lesson in lessons_list]
+    lessons_list = [''.join(el).split("\t") for el in lessons_list]
+    lessons_list = [''.join(['\n    '+el for el in lesson if el]) for lesson in lessons_list]
 
     # Номер аудитории
     rooms_list = schedule_table.find_all("td", attrs={"class": "room"})
@@ -113,16 +116,26 @@ def parse_schedule_for_a_day(web_page, day):
 @bot.message_handler(commands=['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
 def get_schedule(message):
     """ Получить расписание на указанный день """
+    if len(message.text.split()) != 2:
+        resp = f"Используйте <b>{message.text.split()[0]} [group]</b>"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        return
+        
+    week_d = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
     day, group = message.text.split()
     day = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].index(day[1:])+1
     web_page = get_page(group)
+    if not web_page:
+        resp = "<b>Указанной группы не существует</b>"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        return
     try:
         times_lst, locations_lst, lessons_lst, rooms_list = \
             parse_schedule_for_a_day(web_page, day)
     except Exception:
         bot.send_message(message.chat.id, '<b>В указанный день занятий нет</b>', parse_mode='HTML')
         return
-    resp = ''
+    resp = f'<b>{week_d[day-1]}</b>\n'
     for time, location, room, lession in zip(times_lst, locations_lst, rooms_list, lessons_lst):
         if room != "":
             resp += '<b>{}</b>, {}, {}, {}\n'.format(time, location, room, lession)
@@ -134,6 +147,10 @@ def get_schedule(message):
 @bot.message_handler(commands=['near'])
 def get_near_lesson(message):
     """ Получить ближайшее занятие """
+    if len(message.text.split()) != 2:
+        resp = f"Используйте <b>{message.text.split()[0]} [group]</b>"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        return
     # 1. Проверить текущий день
     # 2. Для каждого следующего дня:
     #       если занятий нет --> дальше
@@ -144,6 +161,10 @@ def get_near_lesson(message):
     dt = datetime.now()
     curr_h, curr_m = dt.hour, dt.minute
     web_page = get_page(group, week)
+    if not web_page:
+        resp = "<b>Указанной группы не существует</b>"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        return
     try:
         times_lst, locations_lst, lessons_lst, rooms_list = \
             parse_schedule_for_a_day(web_page, day)
@@ -188,6 +209,11 @@ def get_near_lesson(message):
 @bot.message_handler(commands=['tomorrow'])
 def get_tommorow(message):
     """ Получить расписание на следующий день """
+    if len(message.text.split()) != 2:
+        resp = f"Используйте <b>{message.text.split()[0]} [group]</b>"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        return
+    week_d = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
     _, group = message.text.split()
     week, day = get_curr_week_day()
     if day == 7:
@@ -196,6 +222,10 @@ def get_tommorow(message):
     else:
         day += 1
     web_page = get_page(group, week)
+    if not web_page:
+        resp = "<b>Указанной группы не существует</b>"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        return
 
     try:
         times_lst, locations_lst, lessons_lst, rooms_list = \
@@ -204,7 +234,7 @@ def get_tommorow(message):
         bot.send_message(message.chat.id, '<b>Завтра занятий нет</b>', parse_mode='HTML')
         return
 
-    resp = ''
+    resp = f'<b>{week_d[day-1]}</b>\n'
     for time, location, room, lession in zip(times_lst, locations_lst, rooms_list, lessons_lst):
         if room != "":
             resp += '<b>{}</b>, {}, {}, {}\n'.format(time, location, room, lession)
@@ -217,17 +247,37 @@ def get_tommorow(message):
 @bot.message_handler(commands=['all'])
 def get_all_schedule(message):
     """ Получить расписание на всю неделю для указанной группы """
-    _, group = message.text.split()
-    week = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
-    web_page = get_page(group)
+    n = len(message.text.split())
+    week_d = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+    if n == 2:
+        _, group = message.text.split()
+        web_page = get_page(group)
+    elif n == 3:
+        _, group, week = message.text.split()
+        if week not in {"0", "1", "2"}:
+            resp = "<b>Возможные значения параметра week:</b>\n"
+            resp += "    <b>0</b> (по умолч.) - всё расписание\n"
+            resp += "    <b>1</b> - чётная неделя\n"
+            resp += "    <b>2</b> - нечётная неделя"
+            bot.send_message(message.chat.id, resp, parse_mode='HTML')
+            return
+        web_page = get_page(group, week)
+    else:
+        resp = f"Используйте <b>{message.text.split()[0]} [group] [week=0]</b>"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        return
+    if not web_page:
+        resp = "<b>Указанной группы не существует</b>"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        return
     resp = ''
     for day in range(1, 8):
-        resp += f'<b>{week[day-1]}</b>\n'
+        resp += f'<b>{week_d[day-1]}</b>\n'
         try:
             times_lst, locations_lst, lessons_lst, rooms_list = \
                 parse_schedule_for_a_day(web_page, day)
         except Exception:
-            resp += '<b>Занятий нет</b>\n'
+            resp += '<b>Занятий нет</b>\n\n\n'
             continue
 
         for time, location, room, lession in zip(times_lst, locations_lst, rooms_list, lessons_lst):
@@ -237,13 +287,46 @@ def get_all_schedule(message):
                 resp += '<b>{}</b>, {}, {}\n'.format(time, location, lession)
         resp += '\n'
 
-    try: 
+    k = resp.find('<b>Чт</b>')
+    bot.send_message(message.chat.id, resp[:k], parse_mode='HTML')
+    bot.send_message(message.chat.id, resp[k:], parse_mode='HTML')
+
+
+@bot.message_handler(commands=['time'])
+def get_time(message):
+    dt = datetime.now()
+    s = dt.strftime('%d-%m-%Y %H:%M:%S')
+    bot.send_message(message.chat.id, s)
+    
+    
+@bot.message_handler(commands=['help'])
+def get_help(message):
+    if len(message.text.split()) == 1:
+        resp = '<b>Список команд:</b>\n'
+        resp += '    <b>/time</b> - показать текущие дату и время\n'
+        resp += '    <b>/tomorrow [group]</b> - показать расписание на завтра для указанной группы\n'
+        resp += '    <b>/near [group]</b> - показать ближайшее занятие для указанной группы\n'
+        resp += '    <b>/all [group] [week=0]</b> - показать ближайшее занятие для указанной группы\n'
+        resp += '    <b>/[weekday] [group]</b> - показать расписание для указанной группы в указанный день\n'
+        resp += '    <b>/help weekday</b> - возможные значения параметра weekday\n'
         bot.send_message(message.chat.id, resp, parse_mode='HTML')
-    except Exception:
-        bot.send_message(message.chat.id, 'Расписание слишком длинное')
+    elif len(message.text.split()) == 2:
+        _, cmnd = message.text.split()
+        if cmnd == "weekday":
+            resp = '<b>monday\ntuesday\nwednesday\nthursday\nfriday\nsaturday\nsunday</b>'
+            bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        else:
+            resp = "<b>Неизвестная команда</b>\nВведите <b>/help</b> чтобы отобразить список команд"
+            bot.send_message(message.chat.id, resp, parse_mode='HTML')
+    else:
+        resp = "<b>Неизвестная команда</b>\nВведите <b>/help</b> чтобы отобразить список команд"
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        
+        
+@bot.message_handler(content_types=['text'])
+def echo(message):
+    bot.send_message(message.chat.id, message.text)
 
-
-
-
+        
 if __name__ == '__main__':
     bot.polling(none_stop=True)
